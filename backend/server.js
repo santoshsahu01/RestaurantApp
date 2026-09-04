@@ -1,12 +1,37 @@
 import express from "express";
-import userRoutes from "./routes/userRoutes.js";
+import pg from "pg";
+
+
+const { Pool } = pg;
+
+const pool = new Pool({
+    connectionString: "postgresql://postgres:[Sonu9754512002]@db.yduddaikoqzmywerlacd.pooler.supabase.co:5432/postgres",
+    ssl: {
+        rejectUnauthorized: false
+    }
+});
 
 const app = express();
 
-app.use(express.json());
+app.get("/test-db", async (req, res) => {
+    try {
+        const result = await pool.query("SELECT NOW()");
 
-app.use("/api/users", userRoutes);
+        res.json({
+            connected: true,
+            time: result.rows[0].now
+        });
 
-app.listen(3000, () => {
-  console.log("Server running on port 3000");
+    } catch (error) {
+        console.error("Database error:", error);
+
+        res.status(500).json({
+            connected: false,
+            error: error.message
+        });
+    }
+});
+
+app.listen(5000, () => {
+    console.log("Server running on port 5000");
 });
